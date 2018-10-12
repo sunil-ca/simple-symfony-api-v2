@@ -1,0 +1,11 @@
+<ifModule mod_rewrite.c>
+    ReWriteEngine On
+
+    ReWriteCond %{REQUEST_URI}::$1 ^(/.+)/(.*)::\2$
+    ReWriteRule ^(.*) - [E=BASE:%1]
+
+    ReWriteCond %{REQUEST_FILENAME} -f
+    ReWriteRule .? - [L]
+
+    ReWriteRule .? %{ENV:BASE}/index.php [L]
+</IfModule>

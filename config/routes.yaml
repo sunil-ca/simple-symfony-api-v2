@@ -1,0 +1,23 @@
+product_add:
+  path: /product/add
+  controller: App\Controller\ProductController::add
+
+product_list:
+  path: /product/list
+  controller: App\Controller\ProductController::list
+
+product_update:
+  path: /product/update/{id}
+  controller: App\Controller\ProductController::update
+
+product_show:
+    path: /product/show/{id}
+    controller: App\Controller\ProductController::show
+
+product_delete:
+  path: /product/delete/{id}
+  controller: App\Controller\ProductController::delete
+
+category_list:
+  path: /category/list
+  controller: App\Controller\CategoryController::list
