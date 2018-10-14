@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Product;
@@ -14,42 +15,51 @@ class ProductController extends AbstractController
      * add a new product 
      * end-point: /product/add
      * @param object $request Request Object
+     * @param SessionInterface $session
      * @return json
      */
-    public function add(Request $request) 
+    public function add(Request $request, SessionInterface $session) 
     {
+        $is_valid_user = $session->get('valid_user');
 
-        $is_ajax = $request->isXmlHttpRequest(); // is it an Ajax request?
-
-        if ($is_ajax)
+        if ($is_valid_user)
         {
-            $name = $request->request->get('name');
-            $price = $request->request->get('price');
-            $category = $request->request->get('category');
-            $sku = $request->request->get('sku');
-            $quantity = $request->request->get('quantity');
+            $is_ajax = $request->isXmlHttpRequest(); // is it an Ajax request?
 
-            if (!empty($name) && !empty($sku) && !empty($price) && !empty($quantity) && !empty($category))
+            if ($is_ajax)
             {
-                $product = new Product();
-                $product->setName($name);
-                $product->setSku($sku);
-                $product->setPrice($price);
-                $product->setQuantity($quantity);
-                $product->setCategory($category);
-                $em = $this->getDoctrine()->getManager();
-                $em->persist($product);
-                $em->flush();
-                return $this->json(array('status' => 'success', 'message' => 'Product added successfully.'));
+                $name = $request->request->get('name');
+                $price = $request->request->get('price');
+                $category = $request->request->get('category');
+                $sku = $request->request->get('sku');
+                $quantity = $request->request->get('quantity');
+
+                if (!empty($name) && !empty($sku) && !empty($price) && !empty($quantity) && !empty($category))
+                {
+                    $product = new Product();
+                    $product->setName($name);
+                    $product->setSku($sku);
+                    $product->setPrice($price);
+                    $product->setQuantity($quantity);
+                    $product->setCategory($category);
+                    $em = $this->getDoctrine()->getManager();
+                    $em->persist($product);
+                    $em->flush();
+                    return $this->json(array('status' => 'success', 'message' => 'Product added successfully.'));
+                }
+                else
+                {
+                    return $this->json(array('status' => 'fail', 'message' => 'Product data missing.'));
+                }
             }
             else
             {
-                return $this->json(array('status' => 'fail', 'message' => 'Product data missing.'));
+                return $this->json(array('status' => 'fail', 'message' => 'Something went wrong. Please check your request.'));
             }
         }
         else
         {
-            return $this->json(array('status' => 'fail', 'message' => 'Something went wrong. Please check your request.'));
+            return $this->json(array('status' => 'fail', 'message' => 'Not a valid user'));
         }
     }
 
@@ -90,53 +100,63 @@ class ProductController extends AbstractController
      * end-point: /product/update
      * @param int $id id of the product
      * @param object $request object
+     * @param SessionInterface $session
      * @return json
      */
-    public function update($id, Request $request)
+    public function update($id, Request $request, SessionInterface $session)
     {
         if (!is_numeric($id)) 
         {
             return $this->json(array('status' => 'fail', 'message' => 'product id is not valid'));
         }
 
-        $is_ajax = $request->isXmlHttpRequest();
-        
-        if ($is_ajax)
+        $is_valid_user = $session->get('valid_user');
+
+        if ($is_valid_user)
         {
-            $name = $request->request->get('name');
-            $price = $request->request->get('price');
-            $category = $request->request->get('category');
-            $sku = $request->request->get('sku');
-            $quantity = $request->request->get('quantity');
-            $entityManager = $this->getDoctrine()->getManager();
-            $product = $entityManager->getRepository(Product::class)->find($id);
-
-            if ($name || $price || $category || $sku || $quantity)
+            $is_ajax = $request->isXmlHttpRequest();
+            
+            if ($is_ajax)
             {
-                if (!$product) 
+                $name = $request->request->get('name');
+                $price = $request->request->get('price');
+                $category = $request->request->get('category');
+                $sku = $request->request->get('sku');
+                $quantity = $request->request->get('quantity');
+                $entityManager = $this->getDoctrine()->getManager();
+                $product = $entityManager->getRepository(Product::class)->find($id);
+
+                if ($name || $price || $category || $sku || $quantity)
                 {
-                    return $this->json(array('status' => 'fail', 'message' => 'product not found'));
+                    if (!$product) 
+                    {
+                        return $this->json(array('status' => 'fail', 'message' => 'product not found'));
+                    }
+
+                    $product->setName($name);
+                    $product->setPrice($price);
+                    $product->setCategory($category);
+                    $product->setSku($sku);
+                    $product->setQuantity($quantity);
+
+                    $entityManager->persist($product);
+                    $entityManager->flush();
+
+                    return $this->json(array('status' => 'success', 'message' => 'product updated successfully'));
                 }
-
-                $product->setName($name);
-                $product->setPrice($price);
-                $product->setCategory($category);
-                $product->setSku($sku);
-                $product->setQuantity($quantity);
-
-                $entityManager->persist($product);
-                $entityManager->flush();
-
-                return $this->json(array('status' => 'success', 'message' => 'product updated successfully'));
+                else
+                {
+                    return $this->json(array('status' => 'fail', 'message' => 'product data not missing.'));
+                }
             }
             else
             {
-                return $this->json(array('status' => 'fail', 'message' => 'product data not missing.'));
+                return $this->json(array('status' => 'fail', 'message' => 'Something went wrong. Please check your request.'));
             }
         }
         else
         {
-            return $this->json(array('status' => 'fail', 'message' => 'Something went wrong. Please check your request.'));
+            return $this->json(array('status' => 'fail', 'message' => 'Not a valid user'));
         }
 
     }
@@ -178,25 +198,36 @@ class ProductController extends AbstractController
      * delete a product
      * end-point: /product/delete/{id}
      * @param int $id id of product
+     * @param SessionInterface $session
+     * @return json
      */
-    public function delete($id)
+    public function delete($id, SessionInterface $session)
     {
         if (!is_numeric($id)) 
         {
             return $this->json(array('status' => 'fail', 'message' => 'product id is not valid'));
         }
 
-        $product = $this->getDoctrine()->getRepository(Product::class)->find($id);
-    
-        if (!$product) 
-        {
-            return $this->json(array('status' => 'fail', 'message' => 'no product found.'));
-        }
+        $is_valid_user = $session->get('valid_user');
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->remove($product);
-        $entityManager->flush();
-        return $this->json(array('status' => 'success', 'message' => 'product deleted.'));
+        if ($is_valid_user)
+        {
+            $product = $this->getDoctrine()->getRepository(Product::class)->find($id);
+        
+            if (!$product) 
+            {
+                return $this->json(array('status' => 'fail', 'message' => 'no product found.'));
+            }
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->remove($product);
+            $entityManager->flush();
+            return $this->json(array('status' => 'success', 'message' => 'product deleted.'));
+        }
+        else
+        {
+            return $this->json(array('status' => 'fail', 'message' => 'Not a valid user'));
+        }
     }
 
 
