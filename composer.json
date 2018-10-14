@@ -14,6 +14,8 @@
         "symfony/yaml": "*"
     },
     "require-dev": {
+        "symfony/browser-kit": "*",
+        "symfony/css-selector": "*",
         "symfony/dotenv": "*",
         "symfony/maker-bundle": "^1.7",
         "symfony/phpunit-bridge": "*"
