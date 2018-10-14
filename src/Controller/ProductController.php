@@ -8,6 +8,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Product;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Psr\Log\LoggerInterface;
 
 class ProductController extends AbstractController
 {
@@ -18,7 +19,7 @@ class ProductController extends AbstractController
      * @param SessionInterface $session
      * @return json
      */
-    public function add(Request $request, SessionInterface $session) 
+    public function add(Request $request, SessionInterface $session, LoggerInterface $logger) 
     {
         $is_valid_user = $session->get('valid_user');
 
@@ -59,6 +60,9 @@ class ProductController extends AbstractController
         }
         else
         {
+            //log to log-file
+            $logger->error("Login Failed for a user");
+
             return $this->json(array('status' => 'fail', 'message' => 'Not a valid user'));
         }
     }
@@ -103,7 +107,7 @@ class ProductController extends AbstractController
      * @param SessionInterface $session
      * @return json
      */
-    public function update($id, Request $request, SessionInterface $session)
+    public function update($id, Request $request, SessionInterface $session, LoggerInterface $logger)
     {
         if (!is_numeric($id)) 
         {
@@ -156,6 +160,9 @@ class ProductController extends AbstractController
         }
         else
         {
+            //log to log-file
+            $logger->error("Login Failed for a user");
+
             return $this->json(array('status' => 'fail', 'message' => 'Not a valid user'));
         }
 
@@ -201,7 +208,7 @@ class ProductController extends AbstractController
      * @param SessionInterface $session
      * @return json
      */
-    public function delete($id, SessionInterface $session)
+    public function delete($id, SessionInterface $session, LoggerInterface $logger)
     {
         if (!is_numeric($id)) 
         {
@@ -226,6 +233,9 @@ class ProductController extends AbstractController
         }
         else
         {
+            //log to log-file
+            $logger->error("Login Failed for a user");
+
             return $this->json(array('status' => 'fail', 'message' => 'Not a valid user'));
         }
     }
